@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      # Unit tests plus database tests: every migration is applied to an
+      # embedded Postgres (PGlite), so no services or secrets are needed.
+      - run: npm test
+      # Builds in read-only fixture mode, the same way preview deployments do.
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_DATA_MODE: fixtures
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000

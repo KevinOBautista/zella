@@ -1,0 +1,27 @@
+node_modules/
+.next/
+out/
+build/
+docs/internal/
+.env
+.env.local
+.env.test.local
+.env*.local
+!.env.example
+!.env.test.example
+!.env.production-ops.example
+.dev-emails/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+npm-debug.log*
+.claude/
+
+# Operator artifacts (may reference real account ids / listing slugs)
+supabase/demo/*/.review/
+supabase/.temp/
+public/preview-fixtures/
+
+# Raw demo photo sources (the imported WebPs under images/<home>/ are committed)
+supabase/demo/*/images/*.jpg
