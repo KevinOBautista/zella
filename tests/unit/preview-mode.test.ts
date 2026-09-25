@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { resolveDataMode } from "@/config/runtime";
+import { resolveDataMode, resolveSiteUrl } from "@/config/runtime";
 import { createFixtureClient } from "@/lib/preview-fixtures/client";
 import { previewRequestGuard } from "@/lib/preview-fixtures/guard";
 import type { FixtureData } from "@/lib/preview-fixtures/types";
@@ -21,6 +21,26 @@ describe("resolveDataMode", () => {
 
   it("allows opting into fixtures locally", () => {
     expect(resolveDataMode({ NEXT_PUBLIC_DATA_MODE: "fixtures" })).toBe("fixtures");
+  });
+});
+
+describe("resolveSiteUrl", () => {
+  it("uses an explicit NEXT_PUBLIC_SITE_URL without a trailing slash", () => {
+    expect(resolveSiteUrl({ NEXT_PUBLIC_SITE_URL: "https://zella.example/" })).toBe("https://zella.example");
+  });
+
+  it("treats an empty or blank value as unset and falls back to the Vercel production domain", () => {
+    expect(resolveSiteUrl({ NEXT_PUBLIC_SITE_URL: "", VERCEL_PROJECT_PRODUCTION_URL: "zella.vercel.app", VERCEL_URL: "zella-abc123.vercel.app" })).toBe("https://zella.vercel.app");
+    expect(resolveSiteUrl({ NEXT_PUBLIC_SITE_URL: "  ", VERCEL_PROJECT_PRODUCTION_URL: "zella.vercel.app" })).toBe("https://zella.vercel.app");
+  });
+
+  it("falls back to the deployment URL, then to undefined", () => {
+    expect(resolveSiteUrl({ VERCEL_URL: "zella-abc123.vercel.app" })).toBe("https://zella-abc123.vercel.app");
+    expect(resolveSiteUrl({})).toBeUndefined();
+  });
+
+  it("skips a value that is not a valid URL instead of passing it through", () => {
+    expect(resolveSiteUrl({ NEXT_PUBLIC_SITE_URL: "zella.example", VERCEL_URL: "zella-abc123.vercel.app" })).toBe("https://zella-abc123.vercel.app");
   });
 });
 

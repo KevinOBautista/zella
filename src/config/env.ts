@@ -24,7 +24,9 @@ let cached: z.infer<typeof serverSchema> | undefined;
 
 export function getServerEnv() {
   if (cached) return cached;
-  const parsed = serverSchema.safeParse(process.env);
+  // The direct NEXT_PUBLIC_SITE_URL reference is inlined at build time with the
+  // value next.config.ts resolved, so a blank runtime variable can't override it.
+  const parsed = serverSchema.safeParse({ ...process.env, NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL });
   if (!parsed.success) {
     const message = parsed.error.issues
       .map((issue) => `${issue.path.join(".")}: ${issue.message}`)

@@ -1,11 +1,11 @@
 import type { NextConfig } from "next";
-import { resolveDataMode } from "./src/config/runtime";
+import { resolveDataMode, resolveSiteUrl } from "./src/config/runtime";
 
 // Vercel previews are forced into read-only fixture mode: no Supabase URL or
 // keys are inlined, allowed by CSP, or used for images (docs/architecture.md).
 const dataMode = resolveDataMode(process.env);
 const fixtureMode = dataMode === "fixtures";
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
+const siteUrl = resolveSiteUrl(process.env);
 
 const supabaseHost = (() => {
   if (fixtureMode) return "";
