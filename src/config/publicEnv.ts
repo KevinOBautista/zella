@@ -14,9 +14,20 @@ const publicSchema = z.object({
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
 });
 
-export const publicEnv = publicSchema.parse({
+// Each variable is referenced directly so Next.js can inline it at build time.
+const parsed = publicSchema.safeParse({
   NEXT_PUBLIC_SUPABASE_URL: fixtureMode ? undefined : process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: fixtureMode ? undefined : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: fixtureMode ? undefined : process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
 });
+
+if (!parsed.success) {
+  // Names only, never values, so the message is safe in build logs.
+  const message = parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ");
+  throw new Error(
+    `Invalid public environment configuration: ${message}. Set these for this environment (e.g. Vercel → Settings → Environment Variables) and rebuild.`,
+  );
+}
+
+export const publicEnv = parsed.data;
